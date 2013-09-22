@@ -203,6 +203,9 @@ namespace Qtl { namespace String { namespace Wildcard {
         /// @brief The look-up table that maps iterator of pattern to the index of match result entry
         std::map<CharIter, int> _mapIterToIndex;
 
+		/// @brief The length of the pattern
+		int						_patternLen;
+
     public:
         // a typical wildcard pattern: 
         //   a*b?C(*)
@@ -233,13 +236,15 @@ namespace Qtl { namespace String { namespace Wildcard {
         void PreProcessParentheses()
         {
             _mapIterToIndex.clear();
-            int openingIndex = 0;
-            int closingIndex = 0;
-            for (CharIter iter = GetBegin(); !IsEnd(iter); ++iter)
+            int openingIndex = 1;	// 1-based as 0 is reserved for overral match
+            int closingIndex = 1;
+			_patternLen = 0;
+            for (CharIter iter = GetBegin(); !IsEnd(iter); ++iter, ++_patternLen)
             {
                 if (*iter=='\\')
                 {
                     ++iter; // skip the character that follows
+					++_patternLen;
                 }
                 else if (*iter == '(')
                 {
@@ -269,6 +274,13 @@ namespace Qtl { namespace String { namespace Wildcard {
         {
             return _isStringEnd(iter, _pattern);
         }
+
+		/// @breif Returns the length of the pattern
+		/// @return The length
+		int GetLength()
+		{
+			return _patternLen;
+		}
 
         /// @brief Returns the match entry index for the specified parenthesis pointer
         /// @return The match entry index
@@ -334,10 +346,14 @@ namespace Qtl { namespace String { namespace Wildcard {
 
     public:
         /// @brief Converts a wildcard string to its equivalent regular expression
+		/// @param pattern The wildcard expression to convert to regular expression
+		/// @param regex The regular expression converted from the wildcard expression
+		/// @param iterRegex The iterator to the characters in the regular expression that might be
+		///        needed to add characters to the expression
         /// @remarks This is supposed to comply with the rules set by the regex implementation in QSharp
         ///          See https://qsharp.codeplex.com/SourceControl/latest#QSharp/QSharp.String.Rex/Creator.cs
         ///          for more detail. It has yet to be tested though.
-        void Convert(TPattern &pattern, TRegexStringRef regex, TRegexCharIter iterRegex)
+        void Convert(TPattern &pattern, TRegexStringRef regex, TRegexCharIter &iterRegex)
         {
             for (PatternStringIter iter = pattern.GetBegin(); !pattern.IsEnd(iter); ++iter)
             {
@@ -352,6 +368,8 @@ namespace Qtl { namespace String { namespace Wildcard {
                     }
                     else
                     {
+						// It's a bad wildcard string ending with a single back slash,
+						// however we treat the last back slash literally
                         _regexAppendChar(regex, iterRegex, '\\');
                     }
                     break;
@@ -418,11 +436,12 @@ namespace Qtl { namespace String { namespace Wildcard {
 
     public:
         /// @brief Records the beginning of a quotation encountered
-        /// @param index The index of the match entry
+        /// @param index The index of the match entry. Note it's 1-based as 0 is reserved
+		///        for the overall match
         /// @param iterChar The pointer to the source string where the quotation starts
         void Open(int index, CharIter iterChar)
         {
-            while (index >= Matches.size())
+            while (index >= (int)Matches.size())
             {
                 Matches.push_back(MatchType());
             }
@@ -430,7 +449,8 @@ namespace Qtl { namespace String { namespace Wildcard {
         }
         
         /// @brief Records the end of a quotation encountered
-        /// @param index The index of the match entry
+        /// @param index The index of the match entry. Note it's 1-based as 0 is reserved
+		///        for the overall match
         /// @param iterChar The pointer to the source string where the quotation ends
         void Close(int index, CharIter iterChar)
         {
@@ -470,6 +490,9 @@ namespace Qtl { namespace String { namespace Wildcard {
         typedef typename Traits::StringRef          StringRef;
         /// @brief The type of iterator through the characters in the source string
         typedef typename Traits::CharIter           CharIter;
+
+		/// @brief The type of the match result data structure
+		typedef typename Traits::MatchResultType	MatchResultType;
         
         /// @brief The type of the reference to the match result
         typedef typename Traits::MatchResultRef     MatchResultRef;
@@ -504,14 +527,20 @@ namespace Qtl { namespace String { namespace Wildcard {
         /// @brief Match The source to the pattern
         /// @param source The source string to match
         /// @param pattern The pattern to match against
-        /// @param matchResult The container of matched quotation entries
+        /// @param matchResult The container of matched quotation entries. Note the first entry
+		///        refers to the entire match
         /// @return true if the matching is successful (the pattern is completely consumed)
         template <class TPattern>
         bool Match(StringRef source, TPattern &pattern, MatchResultRef matchResult)
         {
             CharIter iterSource = _stringBegin(source);
-            TPattern::CharIter iterPattern = pattern.GetBegin();
-            return Match(source, iterSource, pattern, iterPattern, matchResult);
+            typename TPattern::CharIter iterPattern = pattern.GetBegin();
+			matchResult.Matches.clear();
+			matchResult.Matches.push_back(MatchResultType::MatchType());
+			matchResult.Matches[0].Begin = iterSource;
+            bool matched = Match(source, iterSource, pattern, iterPattern, matchResult);
+			matchResult.Matches[0].End = iterSource;
+			return matched;
         }
         
         /// @brief Match the source to the pattern (recursive)

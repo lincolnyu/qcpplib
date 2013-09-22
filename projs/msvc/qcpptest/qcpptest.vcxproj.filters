@@ -19,6 +19,12 @@
     <Filter Include="Header Files\qtl\string">
       <UniqueIdentifier>{7276075e-5359-42e0-95c3-440db5958ecb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\qc">
+      <UniqueIdentifier>{fc3eee3c-bb61-4171-89c0-65ce1c55d885}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\qc">
+      <UniqueIdentifier>{93b4fcd7-6ab1-4058-9791-0d2dc464e467}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -30,7 +36,10 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\string\wildcard.h">
+    <ClInclude Include="..\..\..\include\qc\qcintf.h">
+      <Filter>Header Files\qc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\qtl\string\wildcard.h">
       <Filter>Header Files\qtl\string</Filter>
     </ClInclude>
   </ItemGroup>
@@ -42,6 +51,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\common\wildcardtest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\qc\qcintf.cpp">
+      <Filter>Source Files\qc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\qcwildcardtest.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

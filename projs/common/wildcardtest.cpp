@@ -2,12 +2,18 @@
 //
 
 #if defined(_MSC_VER)
-#include "stdafx.h"
+#	include "stdafx.h"
+#endif
+
+#if defined(_MSC_VER)
+#	define STRNCPY(dst, src, len)	strncpy_s(dst, src, len)
+#else
+#	define STRNCPY(dst, src, len)	strncpy(dst, src)
 #endif
 
 #include <string>
 
-#include "string/wildcard.h"
+#include "qtl/string/wildcard.h"
 
 using namespace Qtl::String::Wildcard;
 
@@ -25,7 +31,7 @@ void TestLsz()
 		for (auto iter = matchResult.Matches.begin(); iter != matchResult.Matches.end(); ++iter)
 		{
 			memset(display, 0, sizeof(display));
-			strncpy(display, iter->Begin, pattern.GetQuotedLength(iter->Begin, iter->End));
+			STRNCPY(display, iter->Begin, pattern.GetQuotedLength(iter->Begin, iter->End));
 			printf("%s\n", display);
 		}
 	}
@@ -61,8 +67,9 @@ void TestWcToRegexLsz()
 	WildCardToRegex<Pattern<>> wc2regex;
 	const int regexBufSize=128;
 	char *regex = (char*)alloca(regexBufSize);
+	char *iterRegex = regex;
 	memset(regex, 0, regexBufSize*sizeof(*regex));
-	wc2regex.Convert(pattern, regex, regex);
+	wc2regex.Convert(pattern, regex, iterRegex);
 	printf("%s\n", regex);
 	printf("\n");
 }
