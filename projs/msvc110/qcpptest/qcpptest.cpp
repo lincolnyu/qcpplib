@@ -8,11 +8,15 @@ extern void TestStdStr();
 extern void TestWcToRegexLsz();
 extern void TestWcToRegexStdStr();
 
+extern void SoHashTest();
+
 extern "C" void QcTestWc();
 extern "C" void QcTestWcToRegex();
+extern "C" void QcSoHashTest();
 
 int _tmain(int argc, _TCHAR* argv[])
 {
+#if 0
 	TestLsz();
 	TestStdStr();
 	TestWcToRegexLsz();
@@ -20,5 +24,10 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	QcTestWc();
 	QcTestWcToRegex();
+
+	SoHashTest();
+#endif
+
+	QcSoHashTest();
 }
 

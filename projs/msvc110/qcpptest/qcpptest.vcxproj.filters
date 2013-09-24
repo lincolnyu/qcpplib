@@ -25,6 +25,15 @@
     <Filter Include="Source Files\qc">
       <UniqueIdentifier>{93b4fcd7-6ab1-4058-9791-0d2dc464e467}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\qtl\scheme">
+      <UniqueIdentifier>{22eafb4d-381d-4aba-a698-f02ad98a3312}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\qtl\scheme\hash">
+      <UniqueIdentifier>{0e7f8e32-3600-4c01-8900-3ed81609b1ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\qtl\system">
+      <UniqueIdentifier>{72e577ee-fde0-4432-98dd-89b007c1f476}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -42,6 +51,15 @@
     <ClInclude Include="..\..\..\include\qtl\string\wildcard.h">
       <Filter>Header Files\qtl\string</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\qtl\scheme\hash\sohash.h">
+      <Filter>Header Files\qtl\scheme\hash</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\qtl\system\threading.h">
+      <Filter>Header Files\qtl\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\qtl\system\cpphelper.h">
+      <Filter>Header Files\qtl\system</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -57,6 +75,12 @@
       <Filter>Source Files\qc</Filter>
     </ClCompile>
     <ClCompile Include="..\..\common\qcwildcardtest.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\sohashtest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\qcsohashtest.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

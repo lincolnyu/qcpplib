@@ -1,7 +1,8 @@
 #include "qc/qcintf.h"
 
-// implementation in qtl
+// implementations in qtl
 #include "qtl/string/wildcard.h"
+#include "qtl/scheme/hash/sohash.h"
 
 #if defined(_MSC_VER)
 #	define STRCPY(dst, src, bufsize)	strcpy_s(dst, bufsize, src)
@@ -58,4 +59,65 @@ int QcWildCardToRegex(char *pszWcPattern, char **pszRegex)
 	*pszRegex = (char*)malloc(sizeof(char)*(len+1));
 	STRCPY(*pszRegex, regexBuf, len+1);
 	return len;
+}
+
+/// @brief Creates a split-ordered hash table
+/// @param The max-load which is the ratio of item count to table size at which the table should be expanded
+/// @param The function that dispose of the values added to the table
+/// @return The split-ordered hash table
+void* QcSoHashCreate(float maxLoad, void(*disposer)(void*))
+{
+	using namespace Qtl::Scheme::Hash;
+	typedef SoHashLinear<void*, void(*)(void*)> SoHashType;
+	SoHashType *pSoHashLinear = new SoHashType(maxLoad, disposer);
+	return pSoHashLinear;
+}
+
+/// @brief Adds an item to a split-ordered hash table (an existing one will be replaced)
+/// @param key The key to the item to add
+/// @param pValue The value the key maps to
+void QcSoHashSet(void *pSoHash, unsigned int key, void *pValue)
+{
+	using namespace Qtl::Scheme::Hash;
+	typedef SoHashLinear<void*, void(*)(void*)> SoHashType;
+	SoHashType *pSH = (SoHashType*)pSoHash;
+	pSH->AddKeyValuePair(key, pValue);
+}
+
+
+/// @brief Removes an item from a split-ordered hash table
+/// @param pSoHash The hash table
+/// @param key The key to the item to remove
+/// @return 0 if the item has been removed or -1 if it's not found
+int QcSoHashRemove(void *pSoHash, unsigned int key)
+{
+	using namespace Qtl::Scheme::Hash;
+	typedef SoHashLinear<void *, void(*)(void*)> SoHashType;
+	SoHashType *pSH = (SoHashType*)pSoHash;
+	int numDeleted = pSH->DeleteKey(key);
+	return (numDeleted>0)? 0 : -1;
+}
+
+/// @brief Looks for the item with the specified key in a split-ordered hash table
+/// @param pSoHash The hash table
+/// @param key The key to the item to remove
+/// @param pppValue To return the pointer to the pointer kept in the hash table to the value
+/// @return 0 if the item has been found or -1 if it's not found
+int QcSoHashFind(void *pSoHash, unsigned int key, void ***pppValue)
+{
+	using namespace Qtl::Scheme::Hash;
+	typedef SoHashLinear<void *, void(*)(void*)> SoHashType;
+	SoHashType *pSH = (SoHashType*)pSoHash;
+	bool found = pSH->FindFirst(key, pppValue);
+	return (found)? 0 : -1;
+}
+
+/// @brief finalises a split-ordered hash table
+/// @param pSoHash The hash table to finalise
+void QcSoHashDestroy(void *pSoHash)
+{
+	using namespace Qtl::Scheme::Hash;
+	typedef SoHashLinear<void *, void(*)(void*)> SoHashType;
+	SoHashType *pSH = (SoHashType*)pSoHash;
+	delete pSH;
 }
