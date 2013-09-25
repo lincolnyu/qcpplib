@@ -168,11 +168,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\qc\qcintf.cpp" />
+    <ClCompile Include="..\..\common\qcpptest.cpp" />
     <ClCompile Include="..\..\common\qcsohashtest.c" />
     <ClCompile Include="..\..\common\qcwildcardtest.c" />
     <ClCompile Include="..\..\common\sohashtest.cpp" />
     <ClCompile Include="..\..\common\wildcardtest.cpp" />
-    <ClCompile Include="qcpptest.cpp" />
     <ClCompile Include="stdafx.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
