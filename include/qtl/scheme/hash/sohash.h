@@ -2,7 +2,7 @@
 #define _SOHASH_H_
 
 #include <vector>
-#include <mutex>
+#include <mutex>	/* TODO support for environment where mutex library is not available */
 
 namespace Qtl { namespace Scheme { namespace Hash {
 
@@ -16,7 +16,7 @@ struct DefaultDisposer
 };
 
 /// @brief Split-ordered hash base class
-template <class TValue, class TDisposer=DefaultDisposer<TValue>>
+template <class TValue, class TDisposer=DefaultDisposer<TValue> >
 class SoHash
 {
 public:
@@ -114,8 +114,8 @@ public:	// Nested types
 		{
 		}
 		
-		/// @brief Assign the spcified iterator to this
-		/// @param other The itertator to copy from
+		/// @brief Assign the specified iterator to this
+		/// @param other The iterator to copy from
 		/// @return This iterator after the assignment
 		Iterator &operator=(const Iterator &other)
 		{
@@ -159,7 +159,7 @@ public:	// Nested types
 	/// @brief The constant iterator of the class
 	struct ConstIterator : public Iterator
 	{
-		/// @brief Returns the readonly value the iterator references
+		/// @brief Returns the read-only value the iterator references
 		/// @return The value
 		const ValueType &operator*()
 		{
@@ -184,7 +184,7 @@ protected:
 	/// @brief The number of bits needed at minimum to address a bucket in the table, corresponding to table size
 	int _tableIndexBits;
 
-	/// @brief The mutex used to make code reentrant
+	/// @brief The mutex used to make code re-entrant
 	std::mutex _mutex;
 
 private:
@@ -675,7 +675,7 @@ protected:
 	}
 };
 
-template <class TValue, class TDisposer=DefaultDisposer<TValue>>
+template <class TValue, class TDisposer=DefaultDisposer<TValue> >
 class SoHashLinear : public SoHash<TValue, TDisposer>
 {
 private:
@@ -728,7 +728,7 @@ protected: 	// SoHash<TValue> members
 		_buckets[indexBucket] = node;
 	}
 
-	/// @brief The size of the bucket table; it's provided by the implementor however it should always hold that
+	/// @brief The size of the bucket table; it's provided by the implementer however it should always hold that
     ///        it starts at 2 and doubles only after a CAS
 	/// @return The table size
 	virtual int GetTableSize() const

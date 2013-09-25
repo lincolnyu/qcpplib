@@ -162,7 +162,7 @@ namespace Qtl { namespace String { namespace Wildcard {
         };
     };
     
-    /// @brief A class that encapsulates a wildcard pattern
+    /// @brief A class that encapsulates a wildcard expression
     /// @param TString The type of the pattern string
     /// @param TStringRef The type of the reference to the pattern string (for efficient parameter passing)
     /// @param TCharIter The type of the iterator through the characters
@@ -207,14 +207,14 @@ namespace Qtl { namespace String { namespace Wildcard {
 		int						_patternLen;
 
     public:
-        // a typical wildcard pattern: 
+        // a typical wildcard expression: 
         //   a*b?C(*)
         // 
         /// @brief Instantiates a pattern with the pattern string and the functors
         /// @param pattern The pattern string
         /// @param stringBegin The functor that provides the beginning of the string
         /// @param stringEnd The functor that determines the end of the string
-        /// @remarks A typical wildcard pattern is like: a*b?C(*)D\)
+        /// @remarks A typical wildcard expression is like: a*b?C(*)D\)
         ///          where normal characters (alphanumerics, punctuation etc) expect exact match, asteroids match whatever 
         ///          string of whatever length, question marks match any single character and an escape character 
         ///          (back-slash) turns a succeeding special character to a normal matching character.
@@ -299,7 +299,7 @@ namespace Qtl { namespace String { namespace Wildcard {
         }
     };
 
-    /// @brief A class that converts a wildcard pattern to its equivalent regular expression
+    /// @brief A class that converts a wildcard expression to its equivalent regular expression
     /// @param TPattern The type of the pattern class 
     /// @param TRegexStringRef The type of the reference to the string for regular expression
     /// @param TRegexCharIter The iterator through characters in the string for regular expression
@@ -313,7 +313,7 @@ namespace Qtl { namespace String { namespace Wildcard {
     public:
         /// @brief The type of the reference to regular expression string
         typedef TRegexStringRef     RegexStringRef;
-        /// @brief The type of the iteartor through the characters in the regular expression string
+        /// @brief The type of the iterator through the characters in the regular expression string
         typedef TRegexCharIter      RegexCharIter;
         /// @brief The type of the character that can be append to the regular expression string
         typedef TRegexChar          RegexChar;
@@ -482,7 +482,7 @@ namespace Qtl { namespace String { namespace Wildcard {
     };
     
     /// @brief A wildcard string matcher
-    template <class Traits = MatcherTraits<>>
+    template <class Traits = MatcherTraits<> >
     class Matcher
     {
     public:

@@ -16,9 +16,9 @@ endif
 
 #C++ compiler flags
 ifeq ($(CONFIG), debug)
-CCFLAGS=-g
+CCFLAGS=-g $(IFLAGS)
 else
-CCFLAGS=-g -O2 -DNDEBUG
+CCFLAGS=-g -O2 -DNDEBUG $(IFLAGS)
 endif
 
 #link flags
