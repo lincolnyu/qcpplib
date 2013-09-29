@@ -56,7 +56,7 @@ namespace Qtl { namespace String { namespace Wildcard {
     ///        zero-terminated string
     struct StringBeginFunctorPsz
     {
-        char * operator()(char *str)
+        const char * operator()(const char *str)
         {
             return (str);
         }
@@ -75,7 +75,7 @@ namespace Qtl { namespace String { namespace Wildcard {
     ///        zero-terminated string
     struct StringEndFunctorPsz
     {
-        bool operator()(char *iter, char *str)
+        bool operator()(const char *iter, const char *str)
         {
             return (*iter == 0);
         }
@@ -108,58 +108,68 @@ namespace Qtl { namespace String { namespace Wildcard {
         }
     };
 
+	template <class TStringRef, class TCharIter>
+	struct DefaultStringFunctors
+	{
+		// unimplemented, compiler error occurs if getting here
+	};
+	
+	/// @brief The rebinder to the character array based string functors
+	template <>
+	struct DefaultStringFunctors<const char*, const char*>
+	{
+		typedef StringBeginFunctorPsz               StringBeginFunctor;
+		typedef StringEndFunctorPsz             	StringEndFunctor;
+		typedef CharDistFunctorIndexed<const char*, const char*> CharDistFunctor;
+	};
+
+	/// @brief The rebinder to the std::string based string functors
+	template <>
+	struct DefaultStringFunctors<const std::string&, std::string::const_iterator>
+	{
+		typedef StringBeginFunctorStdStr            StringBeginFunctor;
+		typedef StringEndFunctorStdStr              StringEndFunctor;
+		typedef CharDistFunctorIndexed<std::string::const_iterator, std::string::const_iterator>    CharDistFunctor;
+	};
+
     /// @brief The default class that provides string functors
     struct DefaultStringFunctorSelector
     {
         /// @brief The generic rebinder
-        template <class TStringRef, class TCharIter>
-        struct rebind
-        {
-            // unimplemented, compiler error occurs if getting here
-        };
-        
-        /// @brief The rebinder to the character array based string functors
-        template <>
-        struct rebind<char*,char*>
-        {
-            typedef StringBeginFunctorPsz               StringBeginFunctor;
-            typedef StringEndFunctorPsz             StringEndFunctor;
-            typedef CharDistFunctorIndexed<char*,char*> CharDistFunctor;
-        };
+		template <class TStringRef, class TCharIter>
+        struct rebind : public DefaultStringFunctors<TStringRef, TCharIter>
+		{
+		};
+    };
 
-        /// @brief The rebinder to the std::string based string functors
-        template <>
-        struct rebind<const std::string&, std::string::const_iterator>
-        {
-            typedef StringBeginFunctorStdStr            StringBeginFunctor;
-            typedef StringEndFunctorStdStr              StringEndFunctor;
-            typedef CharDistFunctorIndexed<std::string::const_iterator, std::string::const_iterator>    CharDistFunctor;
-        };
+	/// @brief The generic binder
+    template <class TStringRef, class TCharIter, class TChar>
+    struct DefaultAppendCharFunctor
+    {
+        // unimplemented, compiler error occurs if getting here
+    };
+
+    /// @brief The rebinder to the functor that appends character to character-based zero-terminating string
+    template <>
+    struct DefaultAppendCharFunctor<char*, char*, char>
+    {
+        typedef AppendCharFunctorPsz    AppendCharFunctor;
+    };
+
+	/// @brief The rebinder to the functor that appends character to std::string
+    template <>
+    struct DefaultAppendCharFunctor<std::string&, std::string::iterator, char>
+    {
+        typedef AppendCharFunctorStdStr AppendCharFunctor;
     };
 
     /// @brief The default class that provides functor that appends character to string
     struct DefaultAppendCharFunctorSelector
     {
-        /// @brief The generic binder
         template <class TStringRef, class TCharIter, class TChar>
-        struct rebind
-        {
-            // unimplemented, compiler error occurs if getting here
-        };
-
-        /// @brief The rebinder to the functor that appends character to character-based zero-terminating string
-        template <>
-        struct rebind<char*, char*, char>
-        {
-            typedef AppendCharFunctorPsz    AppendCharFunctor;
-        };
-
-        /// @brief The rebinder to the functor that appends character to std::string
-        template <>
-        struct rebind<std::string&, std::string::iterator, char>
-        {
-            typedef AppendCharFunctorStdStr AppendCharFunctor;
-        };
+		struct rebind : DefaultAppendCharFunctor<TStringRef, TCharIter, TChar>
+		{
+		};
     };
     
     /// @brief A class that encapsulates a wildcard expression
@@ -168,7 +178,7 @@ namespace Qtl { namespace String { namespace Wildcard {
     /// @param TCharIter The type of the iterator through the characters
     /// @param TStringBeginFunctor The type of the functor that returns the iterator at the beginning of a string
     /// @param TStringEndFunctor The type of the functor that determines if the iterator is at the end of a string
-    template <class TString=char*, class TStringRef=char*, class TCharIter=char*,
+    template <class TString=const char*, class TStringRef=const char*, class TCharIter=const char*,
         class TStringFunctorSelector=DefaultStringFunctorSelector>
     class Pattern
     {
@@ -398,7 +408,7 @@ namespace Qtl { namespace String { namespace Wildcard {
     /// @brief A class that represents a match of quotation enclosed by a pair of parentheses in the pattern
     /// @param TCharIter The type of iterator through the source string
     /// @param TDiff The type of a integer number that indicates the length of string or the distance between characters
-    template <class TCharIter=char*, class TDiff=size_t>
+    template <class TCharIter=const char*, class TDiff=size_t>
     class MatchQuote
     {
     public:
@@ -419,7 +429,7 @@ namespace Qtl { namespace String { namespace Wildcard {
     /// @brief A class that contains all the matched quotations
     /// @param TCharIter The iterator through the source string
     /// @param TDiff The type of the integer that indicates a string length or a character distance
-    template <class TCharIter=char*, class TDiff=size_t>
+    template <class TCharIter=const char*, class TDiff=size_t>
     class MatchResult
     {
     public:
@@ -430,9 +440,11 @@ namespace Qtl { namespace String { namespace Wildcard {
         /// @brief The type of match entries listed in this object
         typedef MatchQuote<CharIter, Diff>  MatchType;
 
+		typedef std::vector<MatchType>		MatchList;
+
     public:
         /// @brief A list of matched quotation entries
-        std::vector<MatchType> Matches;
+        MatchList Matches;
 
     public:
         /// @brief Records the beginning of a quotation encountered
@@ -461,7 +473,7 @@ namespace Qtl { namespace String { namespace Wildcard {
 
     /// @brief A default trait class that provides types needed by Matcher
     /// @param TChar 
-    template <class TStringRef=char*, class TCharIter=char*, class TDiff=size_t,
+    template <class TStringRef=const char*, class TCharIter=const char*, class TDiff=size_t,
         class TStringFunctorSelector=DefaultStringFunctorSelector>
     struct MatcherTraits
     {
@@ -536,7 +548,7 @@ namespace Qtl { namespace String { namespace Wildcard {
             CharIter iterSource = _stringBegin(source);
             typename TPattern::CharIter iterPattern = pattern.GetBegin();
 			matchResult.Matches.clear();
-			matchResult.Matches.push_back(MatchResultType::MatchType());
+			matchResult.Matches.push_back(typename MatchResultType::MatchType());
 			matchResult.Matches[0].Begin = iterSource;
             bool matched = Match(source, iterSource, pattern, iterPattern, matchResult);
 			matchResult.Matches[0].End = iterSource;
@@ -563,7 +575,7 @@ namespace Qtl { namespace String { namespace Wildcard {
                 else if (*iterPattern == '*')
                 {
                     CharIter savedIterSource = iterSource;
-                    TPattern::CharIter savedIterPattern = iterPattern;
+                    typename TPattern::CharIter savedIterPattern = iterPattern;
                     // greedy strategy
                     if (!_stringEnd(savedIterSource, source))
                     {

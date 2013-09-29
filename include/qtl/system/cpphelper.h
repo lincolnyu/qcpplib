@@ -7,5 +7,4 @@ bool IsOfType(void *pQuery)
 	return (dynamic_cast<T>(pQuery> != NULL);
 }
 
-
 #endif

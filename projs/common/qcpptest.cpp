@@ -1,7 +1,13 @@
 // qcpptest.cpp : Defines the entry point for the console application.
 //
 
-#include "stdafx.h"
+#if defined(_MSC_VER)
+#	include "stdafx.h"
+#else
+#	define _TCHAR	char
+#	define _tmain	main
+#	include <stdio.h>
+#endif
 
 extern void TestLsz();
 extern void TestStdStr();
@@ -16,7 +22,8 @@ extern "C" void QcSoHashTest();
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-#if 0
+	printf("main\n");
+#if 1
 	TestLsz();
 	TestStdStr();
 	TestWcToRegexLsz();
@@ -27,7 +34,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	SoHashTest();
 #endif
-
 	QcSoHashTest();
+	return 0;
 }
 

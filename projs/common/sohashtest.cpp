@@ -1,5 +1,6 @@
 #include "qtl/scheme/hash/sohash.h"
 
+#include <cstdio>
 #include <vector>
 #include <map>
 

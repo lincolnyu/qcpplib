@@ -2,7 +2,7 @@
 #define _SOHASH_H_
 
 #include <vector>
-#include <mutex>	/* TODO support for environment where mutex library is not available */
+#include "qtl/system/threading.h"
 
 namespace Qtl { namespace Scheme { namespace Hash {
 
@@ -81,11 +81,11 @@ public:	// Nested types
 	/// @brief The iterator of the class
 	class Iterator
 	{
-	private:
+	protected:
 		/// @brief The node the iterator is based on
 		BaseNode *_node;
 		
-	private:
+	protected:
 		/// @brief Moves the iterator to the next
 		void MoveNext()
 		{
@@ -95,7 +95,7 @@ public:	// Nested types
 			} while (_node != NULL && dynamic_cast<Node*>(_node) == NULL);
 		}
 	
-	private:
+	protected:
 		/// @brief Instantiates an iterator with the specified node
 		/// @param node The node the iterator to bind to
 		Iterator(BaseNode *node) : _node(node)
@@ -152,18 +152,22 @@ public:	// Nested types
 		/// @return The value
 		ValueType &operator*()
 		{
-			return (_node != NULL)?dynamic_cast<Node*>(_node)->Value:ValueType();
+			return (_node != NULL)? dynamic_cast<Node*>(_node)->Value : ValueType();
 		}
 	};
 	
 	/// @brief The constant iterator of the class
-	struct ConstIterator : public Iterator
+	class ConstIterator : public Iterator
 	{
+	private:
+		typedef Iterator Base;
+
+	public:
 		/// @brief Returns the read-only value the iterator references
 		/// @return The value
-		const ValueType &operator*()
+		const ValueType &operator*() const
 		{
-			return (_node != NULL)?dynamic_cast<Node*>(_node)->Value:ValueType();
+			return (Base::_node != NULL)? dynamic_cast<Node*>(Base::_node)->Value : ValueType();
 		}
 	};	
 
@@ -185,7 +189,7 @@ protected:
 	int _tableIndexBits;
 
 	/// @brief The mutex used to make code re-entrant
-	std::mutex _mutex;
+	Qtl::System::Threading::Mutex _mutex;
 
 private:
 	TDisposer _disposer;
@@ -267,7 +271,7 @@ public:
 		Node *node = new Node(soKey, value);
 
 		// lock
-		std::lock_guard<std::mutex> lock(_mutex);
+		Qtl::System::Threading::LockGuard lock(_mutex);
 		
 		int indexBucket = (int) (key & ((KeyType) GetTableSize() - 1));
 		BaseNode *cp = GetBucket(indexBucket);
@@ -305,7 +309,7 @@ public:
 	void Clear()
 	{
 		// lock
-		std::lock_guard<std::mutex> lock(_mutex);
+		Qtl::System::Threading::LockGuard lock(_mutex);
 
 		BaseNode *cp = GetBucket(0);
         if (cp == NULL) return;
@@ -376,7 +380,7 @@ public:
 	Iterator FindFirst(KeyType key, KeyType *pSoKey=NULL)
 	{
 		KeyType soKey;
-		Iterator iter = _FindFirstIter(key, soKey);
+		Iterator iter = _FindFirstItr(key, soKey);
 		if (pSoKey != NULL)
 		{
 			*pSoKey = soKey;
@@ -391,7 +395,7 @@ public:
 	ConstIterator FindFirst(KeyType key, KeyType *pSoKey=NULL) const
 	{
 		KeyType soKey;
-		ConstIterator iter = _FindFirstCIter(key, soKey);
+		ConstIterator iter = _FindFirstCItr(key, soKey);
 		if (pSoKey != NULL)
 		{
 			*pSoKey = soKey;
@@ -419,7 +423,7 @@ public:
         KeyType soKey = soDummyKey | 0x1;
 
         // lock
-		std::lock_guard<std::mutex> lock(_mutex);
+		Qtl::System::Threading::LockGuard lock(_mutex);
         
         int indexBucket = (int) (key & ((KeyType) GetTableSize() - 1));
         BaseNode *cp = GetBucket(indexBucket);
@@ -681,6 +685,8 @@ class SoHashLinear : public SoHash<TValue, TDisposer>
 private:
 	typedef SoHash<TValue, TDisposer> Base;
 
+	typedef typename Base::BaseNode BaseNode;
+
 private:
 	BaseNode **_buckets;
 
@@ -701,7 +707,7 @@ public:
 
 	virtual ~SoHashLinear()
 	{
-		Clear();
+		Base::Clear();
 		delete _buckets;
 	}
  	
@@ -739,7 +745,7 @@ protected: 	// SoHash<TValue> members
 	/// @brief Calls the Double() method if the implementation reckons it should
 	virtual void ExpandIfNeeded()
 	{
-		if (GetCount()<=GetMaxLoad()*GetTableSize())
+		if (Base::GetCount()<=GetMaxLoad()*GetTableSize())
 		{
 			return;
 		}
@@ -749,7 +755,7 @@ protected: 	// SoHash<TValue> members
 
 		// Note all the new buckets have been committed by the Double() method
 		// That's why _tableSize is by definition to be doubled and the buckets array was not initialized to zero
-		Double();
+		Base::Double();
 
 		_tableSize *= 2;
 	}

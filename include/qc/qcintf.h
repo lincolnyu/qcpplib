@@ -34,6 +34,10 @@
 #if !defined (_QCINTF_H_)
 #define _QCINTF_H_
 
+#undef BOOL
+#undef TRUE
+#undef FALSE
+
 #define BOOL	int
 #define TRUE	(1)
 #define FALSE	(0)
@@ -49,14 +53,14 @@ extern "C" {
 	///        organized in order and alternately. The variable is allocated internally unless it's NULL 
 	///        and it's the responsibility of the caller to deallocate it.
 	/// @return The number of match entries if matching or -1
-	int QcWildcardMatch(char *pszSource, char *pszPattern, int **paMatchRef);
+	int QcWildcardMatch(const char *pszSource, const char *pszPattern, int **paMatchRef);
 
 	/// @brief Converts wildcard string to a regular expression
 	/// @param pszWcPattern The wildcard pattern to convert to regular expression
 	/// @param pszRegex The regular expression converted from the wildcard pattern. It cannot be NULL. It's
 	///        the caller's responsibility to deallocate it.
 	/// @return The number of characters in regular expression if conversion successful or -1
-	int QcWildCardToRegex(char *pszWcPattern, char **pszRegex);
+	int QcWildCardToRegex(const char *pszWcPattern, char **pszRegex);
 
 	/// @brief Creates a split-ordered hash table
 	/// @param The max-load which is the ratio of item count to table size at which the table should be expanded

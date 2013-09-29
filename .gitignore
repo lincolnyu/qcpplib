@@ -213,3 +213,13 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+
+
+#################
+## Unix
+#################
+
+# Build results
+*.o
+*.a
+*.out

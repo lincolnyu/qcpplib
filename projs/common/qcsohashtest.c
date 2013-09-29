@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <memory.h>
-#include <malloc.h>
 
 #define BOOL	int
 
@@ -49,10 +48,10 @@ void QcSoHashTest()
 		void **pp;
 		KeyType key = rand()%200;
 		int res = QcSoHashFind(pSH, key, &pp);
-		void *p = *pp;
-		ValueType *pVal = (ValueType*)p;
 		if (res == 0)
 		{
+			void *p = *pp;
+			ValueType *pVal = (ValueType*)p;
 			printf("found for key %d, %d\n", key, pVal->Value);
 		}
 		else

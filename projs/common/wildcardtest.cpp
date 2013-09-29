@@ -8,9 +8,17 @@
 #if defined(_MSC_VER)
 #	define STRNCPY(dst, src, len)	strncpy_s(dst, src, len)
 #else
-#	define STRNCPY(dst, src, len)	strncpy(dst, src)
+#	define STRNCPY(dst, src, len)	strncpy(dst, src, len)
 #endif
 
+#include "qtl/system/system.h"
+
+#include <cstdio>
+#if _QTL_MINGW
+#	include <malloc.h>
+#else
+#	include <stdlib.h>
+#endif
 #include <string>
 
 #include "qtl/string/wildcard.h"
@@ -19,16 +27,17 @@ using namespace Qtl::String::Wildcard;
 
 void TestLsz()
 {	
-	printf("+%s()...\n", __FUNCTION__);
+	printf("+%s...\n", _QTL_FUNC);
 	Matcher<> matcher;
 	Pattern<> pattern("ab(*)C(?)dd\\(t(f(*)abc)q");
-	MatchResult<> matchResult;
-	char *s = "abcdarrCgdd(tfabtabcq";
+	typedef MatchResult<> MatchR;
+	MatchR matchResult;
+	const char *s = "abcdarrCgdd(tfabtabcq";
 	bool matched = matcher.Match(s, pattern, matchResult);
 	if (matched)
 	{
 		char display[128];
-		for (auto iter = matchResult.Matches.begin(); iter != matchResult.Matches.end(); ++iter)
+		for (MatchR::MatchList::iterator iter = matchResult.Matches.begin(); iter != matchResult.Matches.end(); ++iter)
 		{
 			memset(display, 0, sizeof(display));
 			STRNCPY(display, iter->Begin, pattern.GetQuotedLength(iter->Begin, iter->End));
@@ -39,18 +48,19 @@ void TestLsz()
 
 void TestStdStr()
 {
-	printf("+%s()...\n", __FUNCTION__);
+	printf("+%s...\n", _QTL_FUNC);
 	typedef MatcherTraits<const std::string&, std::string::const_iterator, size_t> Traits;
 	Matcher<Traits> matcher;
 	Pattern<> pattern("ab(*)C(?)dd\\(t(f(*)abc)q");
-	MatchResult<std::string::const_iterator, size_t> matchResult;
+	typedef MatchResult<std::string::const_iterator, size_t> MatchR;
+	MatchR matchResult;
 	std::string s = "abcdarrCgdd(tfabtabcq";
 	bool matched = matcher.Match(s, pattern, matchResult);
 	if (matched)
 	{
-		for (auto iter = matchResult.Matches.begin(); iter != matchResult.Matches.end(); ++iter)
+		for (MatchR::MatchList::iterator iter = matchResult.Matches.begin(); iter != matchResult.Matches.end(); ++iter)
 		{
-			for (auto citer = iter->Begin; citer!=iter->End; ++citer)
+			for (MatchR::MatchType::CharIter citer = iter->Begin; citer!=iter->End; ++citer)
 			{
 				printf("%c", *citer);
 			}
@@ -62,9 +72,9 @@ void TestStdStr()
 
 void TestWcToRegexLsz()
 {
-	printf("+%s()...\n", __FUNCTION__);
+	printf("+%s...\n", _QTL_FUNC);
 	Pattern<> pattern("ab(*)C(?)dd\\(t(f(*)abc)q");
-	WildCardToRegex<Pattern<>> wc2regex;
+	WildCardToRegex<Pattern<> > wc2regex;
 	const int regexBufSize=128;
 	char *regex = (char*)alloca(regexBufSize);
 	char *iterRegex = regex;
@@ -76,11 +86,12 @@ void TestWcToRegexLsz()
 
 void TestWcToRegexStdStr()
 {
-	printf("+%s()...\n", __FUNCTION__);
+	printf("+%s...\n", _QTL_FUNC);
 	Pattern<> pattern("ab(*)C(?)dd\\(t(f(*)abc)q");
 	WildCardToRegex<Pattern<>, std::string&, std::string::iterator> wc2regex;
 	std::string regex;
-	wc2regex.Convert(pattern, regex, regex.begin());
+	std::string::iterator dummy = regex.begin();
+	wc2regex.Convert(pattern, regex, dummy);
 	printf("%s\n", regex.c_str());
 	printf("\n");
 }

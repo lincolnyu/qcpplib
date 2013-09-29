@@ -1,8 +1,11 @@
-#include "qc/qcintf.h"
+#include "qtl/system/system.h"
+#include <malloc.h>
 
 // implementations in qtl
 #include "qtl/string/wildcard.h"
 #include "qtl/scheme/hash/sohash.h"
+
+#include "qc/qcintf.h"
 
 #if defined(_MSC_VER)
 #	define STRCPY(dst, src, bufsize)	strcpy_s(dst, bufsize, src)
@@ -17,7 +20,7 @@
 ///        organized in order and alternately. The variable is allocated internally unless it's NULL 
 ///        and it's the responsibility of the caller to deallocate it.
 /// @return The number of match entries if matching or -1
-int QcWildcardMatch(char *pszSource, char *pszPattern, int **paMatchRef)
+int QcWildcardMatch(const char *pszSource, const char *pszPattern, int **paMatchRef)
 {
 	using namespace Qtl::String::Wildcard;
 	Matcher<> matcher;
@@ -46,7 +49,7 @@ int QcWildcardMatch(char *pszSource, char *pszPattern, int **paMatchRef)
 /// @param pszRegex The regular expression converted from the wildcard pattern. It cannot be NULL. It's
 ///        the caller's responsibility to deallocate it.
 /// @return The number of characters in regular expression if conversion successful or -1
-int QcWildCardToRegex(char *pszWcPattern, char **pszRegex)
+int QcWildCardToRegex(const char *pszWcPattern, char **pszRegex)
 {
 	using namespace Qtl::String::Wildcard;
 	Pattern<> pattern(pszWcPattern);

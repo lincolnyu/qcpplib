@@ -1,9 +1,7 @@
 #configurations
-.if target(debug)
-CONFIG=debug
-.else
+ifneq ($(CONFIG), debug)
 CONFIG=release
-.endif
+endif
 
 #include directories
 IFLAGS=-I. -I../../include
@@ -15,28 +13,28 @@ CC=gcc
 CCC=g++
 
 #C compiler flags
-.if $(CONFIG)==debug
-CFLAGS=-c -Wall $(IFLAGS)
-.else
-CFLAGS = -pipe -O2 -DNDEBUG $(IFLAGS) 
-.endif
+ifeq ($(CONFIG),debug)
+CFLAGS=-c -Wall $ifLAGS)
+else
+CFLAGS = -pipe -O2 -DNDEBUG $(IFLAGS)
+endif
 
 #C++ compiler flags
-.if $(CONFIG)==debug
-CCFLAGS=-g $(IFLAGS)
-.else
+ifeq ($(CONFIG),debug)
+CCFLAGS=-g $ifLAGS)
+else
 CCFLAGS=-g -O2 -DNDEBUG $(IFLAGS)
-.endif
+endif
 
 #link flags
 LDFLAGS=
 
 #library folder
-.if $(CONFIG)==debug
+ifeq ($(CONFIG),debug)
 LIB = ../../lib/linux/debug
-.else
+else
 LIB = ../../lib/linux/release
-.endif
+endif
 
 # C source code for testing
 TESTCSRC=../common/qcwildcardtest.c \
@@ -90,13 +88,13 @@ COBJS=$(CSRC,.c=.o)
 CCOBJS=$(CCSRC,.cpp=.o)
 
 # The tesing executable
-TESTEXE=../../bin/unix/$(CONFIG)/qcpptest.out
+TESTEXE=../../bin/linux/$(CONFIG)/qcpptest.out
 
 # The objects the C interface libarary depends on
 LIBDEP=../../src/qc/qcintf.o
 
 # The C interface library
-LIBOUT=../../lib/unix/libqcintf.a
+LIBOUT=../../lib/linux/libqcintf.a
 
 # All static libraries
 LIBS=$(LIBOUT)
