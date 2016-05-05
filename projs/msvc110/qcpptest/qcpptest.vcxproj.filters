@@ -34,6 +34,9 @@
     <Filter Include="Header Files\qtl\system">
       <UniqueIdentifier>{72e577ee-fde0-4432-98dd-89b007c1f476}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\qtl\scheme\pointers">
+      <UniqueIdentifier>{56aa2ef7-a869-40df-a1da-78bbe7b63ced}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -59,6 +62,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\include\qtl\system\cpphelper.h">
       <Filter>Header Files\qtl\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\qtl\scheme\pointers\bipointer.h">
+      <Filter>Header Files\qtl\scheme\pointers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
