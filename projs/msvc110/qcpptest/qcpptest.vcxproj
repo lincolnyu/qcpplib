@@ -169,6 +169,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\qc\qcintf.cpp" />
+    <ClCompile Include="..\..\common\bipointertester.cpp" />
     <ClCompile Include="..\..\common\qcpptest.cpp" />
     <ClCompile Include="..\..\common\qcsohashtest.c" />
     <ClCompile Include="..\..\common\qcwildcardtest.c" />

@@ -1,60 +1,35 @@
 #if !defined (_BIPOINTER_H_)
 #define _BIPOINTER_H_
 
-#include <hash_set>
+#include <unordered_set>
 
 using namespace std;
 
 namespace Qtl { namespace Scheme { namespace Pointers {
 
 	class BiPointedObject;
-	
-	class BiPointerCore
+
+	class BackRef
 	{
 	private:
 		// when the pointer is on the stack frame, this is null
 		BiPointedObject * _source = nullptr;
-		BiPointedObject * _target = nullptr;
-		
+
 		friend class BiPointedObject;
 		
 	public:
-		~BiPointerCore()
+		BackRef(BiPointedObject *source)
 		{
-			if (_target != nullptr)
-			{
-				_target->RemoveInbound(*this);
-			}
+			_source = source;
+		}
+
+		bool operator==(const BackRef &other) const
+		{
+			return _source == other._source;
 		}
 		
-		bool IsStackFrameBased() const
-		{
-			if (_source == nullptr) return true;
-			_source->_visitFlag = true;
-			for (hash_set<BiPointerCore>::iterator bpcitr = _source->_inbound.begin(); bpcitr != _source->_inbound.end(); ++bpcitr)
-			{
-				const BiPointerCore &ib = *bpcitr;
-				if (ib.IsStackFrameBased()) return true;
-			}
-			return false;
-		}
-		
-		void ClearVisitFlags() const
-		{
-			if (_source != nullptr && _source->_visitFlag)
-			{
-				_source->ClearVisitFlags();
-			}
-		}
-	
 	public:
-		template <class T> T & GetSource() const { return _source->getContent(); }
-		template <class T> const T &  GetSource() const { return _source->getContent(); }
-		template <class T>  & GetTarget() const { return _target->getContent(); }
-		template <class T>  T &  GetTarget() const { return _target->getContent(); }
-		
-		template <class T> void SetSource(T &t) { t.AddOutbound(*this); }
-		template <class T> void SetTarget(T &t) { t.AddInbound(*this);}
+		BiPointedObject * GetSourceObject() const { return _source ; }
 	};
 	
 	class GarbageCollector
@@ -63,12 +38,14 @@ namespace Qtl { namespace Scheme { namespace Pointers {
 		static GarbageCollector Instance;
 		
 	private:
-		hash_set<BiPointedObject*> _checkedObjects;
+		unordered_set<BiPointedObject*> _checkedObjects;
 	
 	public:
 		int ClearThreshold = 32;
 		
 	public:
+		void DisposeAll();
+
 		~GarbageCollector()
 		{
 			DisposeAll();
@@ -85,84 +62,98 @@ namespace Qtl { namespace Scheme { namespace Pointers {
 				DisposeAll();
 			}
 		}
-		
-		void DisposeAll()
-		{
-			for (hash_set<BiPointedObject*>::iterator itr = _checkedObjects.begin(); itr != _checkedObjects.end(); ++itr)
-			{
-				BiPointedObject *obj = *itr;
-				obj->UpdateIfIsolated();
-			}
-			_checkedObjects.clear();
-		}
 	};
 	
 	class BiPointedObject
 	{
 	private:
-		// TODO can change this to set
-		hash_set<BiPointerCore> _inbound;
-		hash_set<BiPointerCore> _outbound;
+		typedef unordered_set<BackRef, _Bitwise_hash<BackRef>> InboundSet;
+
+	private:
 		bool _visitFlag;
-		
+		InboundSet _inbound;
+
+		friend class BackRef;
 		friend class BiPointerCore;
 		
-	private:
+	private:		
 		void DeleteThis()
 		{
 			delete this;
 		}
 		
-		void QuickCheck()
+		bool QuickCheck()
 		{
 			if (_inbound.size() == 0)
 			{
 				DeleteThis();
+				return true;
 			}
+			return false;
 		}
 		
 		bool IsStackFrameBased()
 		{
-			for (hash_set<BiPointerCore>::iterator itr = _inbound.begin(); itr != 
+			for (InboundSet::iterator itr = _inbound.begin(); itr !=
 				_inbound.end(); ++itr)
 			{
-				const BiPointerCore &ib = *itr;
-				if (ib.IsStackFrameBased()) return true;
+				const BackRef &ib = *itr;
+				if (IsStackFrameBased(ib)) return true;
 			}
 			return false;
 		}
 			
-		void ClearVisitFlags()
-		{
-			_visitFlag = false;
-			for (hash_set<BiPointerCore>::iterator itr = _inbound.begin(); itr != _inbound.end(); ++itr)
-			{
-				const BiPointerCore &ib = *itr;
-				ib.ClearVisitFlags();
-			}
-		}
-
-		void RemoveInbound(BiPointerCore &bp)
+		void RemoveInbound(BackRef &bp)
 		{
 			_inbound.erase(bp);
-			QuickCheck();
-			GarbageCollector::Instance.AddToCheck(this);
+			if (!QuickCheck())
+			{
+				GarbageCollector::Instance.AddToCheck(this);
+			}
 		}
-		
-		void AddOutbound(BiPointerCore &bp)
-		{
-			_outbound.insert(bp);
-		}
-		
-		void AddInbound(BiPointerCore &bp)
+				
+		void AddInbound(BackRef &bp)
 		{
 			_inbound.insert(bp);
 		}
+
+		static void ClearVisitFlags(const BackRef &ib)
+		{
+			if (ib._source != nullptr && ib._source->_visitFlag)
+			{
+				ib._source->ClearVisitFlags();
+			}
+		}
+
+		bool IsStackFrameBased(const BackRef &ib) const
+		{
+			if (ib._source == nullptr) return true;
+			ib._source->_visitFlag = true;
+			for (InboundSet::iterator bpcitr = ib._source->_inbound.begin(); bpcitr != ib._source->_inbound.end(); ++bpcitr)
+			{
+				const BackRef &ib1 = *bpcitr;
+				if (IsStackFrameBased(ib1)) return true;
+			}
+			return false;
+		}
+
+	protected:
+		void ClearVisitFlags()
+		{
+			_visitFlag = false;
+			for (InboundSet::iterator itr = _inbound.begin(); itr != _inbound.end(); ++itr)
+			{
+				const BackRef &ib = *itr;
+				ClearVisitFlags(ib);
+			}
+		}
 		
 	public:
-		//virtual T & GetContent<T>() = 0;
-		//virtual const T & GetContent<T>() const = 0;
-		
+		virtual ~BiPointedObject()
+		{
+
+		}
+
 		void UpdateIfIsolated()
 		{
 			bool isolated = CheckIfIsolated();
@@ -180,11 +171,106 @@ namespace Qtl { namespace Scheme { namespace Pointers {
 			return isolated;
 		}
 	};
-	/*
-	template <class T> class BiPointer : private BiPointerCore
+
+	class BiPointerCore
 	{
-		
-	}*/
+	protected:
+		BiPointedObject *_target;
+
+		BiPointerCore() : _target(nullptr)
+		{
+
+		}
+
+	public:
+		void Link(BiPointedObject *source, BiPointedObject *target)
+		{
+			if (_target == target) return;
+			Release(source);
+			_target = target;
+			if (_target != nullptr)
+			{
+				_target->AddInbound(BackRef(source)); // move constructor?
+			}
+		}
+
+		void Release(BiPointedObject *source) 
+		{
+			if (_target != nullptr)
+			{
+				_target->RemoveInbound(BackRef(source));
+			}
+		}
+	};
+
+	template <class T>
+	class BiPointer : public BiPointerCore
+	{
+	private:
+		BiPointedObject *_source;
+
+	public:
+		BiPointer()
+			: _source(nullptr)
+		{
+
+		}
+
+		BiPointer(BiPointedObject *target)
+			: _source(nullptr)
+		{
+			Link(_source, target);
+		}
+
+		~BiPointer()
+		{
+			Release(_source);
+		}
+
+		void SetSource(BiPointedObject *source)
+		{
+			_source = source;
+		}
+
+		void operator=(BiPointer<T> &other) 
+		{
+			Link(_source, other._target);
+		}
+
+		template <class T2>
+		void operator=(BiPointer<T2> &other)
+		{
+			Link(_source, other._target);
+		}
+
+		void operator=(BiPointedObject &other) 
+		{
+			Link(_source, &other);
+		}
+
+		void operator=(BiPointedObject *other)
+		{
+			Link(_source, other);
+		}
+
+		T * operator->() const
+		{
+			return static_cast<T*>(_target);
+		}
+	};
+
+	// TODO move to CPP
+	void GarbageCollector::DisposeAll()
+	{
+		for (unordered_set<BiPointedObject*>::iterator itr = _checkedObjects.begin(); itr != _checkedObjects.end(); ++itr)
+		{
+			BiPointedObject *obj = *itr;
+			obj->UpdateIfIsolated();
+		}
+		_checkedObjects.clear();
+	}
+
+	GarbageCollector GarbageCollector::Instance;
 }}}
 
 #endif

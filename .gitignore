@@ -223,3 +223,4 @@ pip-log.txt
 *.o
 *.a
 *.out
+/projs/msvc110/qcpptest/qcpptest.VC.db

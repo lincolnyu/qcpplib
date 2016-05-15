@@ -13,6 +13,7 @@ extern void TestLsz();
 extern void TestStdStr();
 extern void TestWcToRegexLsz();
 extern void TestWcToRegexStdStr();
+extern void TestBiPointer();
 
 extern void SoHashTest();
 
@@ -23,6 +24,8 @@ extern "C" void QcSoHashTest();
 int _tmain(int argc, _TCHAR* argv[])
 {
 	printf("main\n");
+	TestBiPointer();
+#if 0
 #if 1
 	TestLsz();
 	TestStdStr();
@@ -35,6 +38,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	SoHashTest();
 #endif
 	QcSoHashTest();
+#endif
 	return 0;
 }
 
