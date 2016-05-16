@@ -26,6 +26,7 @@ private:
 public:
 	Human(int id)
 	{
+		SetSources();
 		Id = id;
 		cout << "Human " << Id << " generated" << endl;
 	}
@@ -61,6 +62,7 @@ private:
 public:
 	Dog(int id)
 	{
+		SetSources();
 		Id = id;
 		cout << "Dog " << Id << " generated" << endl;
 	}
@@ -73,7 +75,7 @@ public:
 public:
 	void Bark()
 	{
-		cout << "wof" << endl;
+		cout << "woof" << endl;
 	}
 };
 
@@ -82,15 +84,27 @@ class BiPointerTestser
 public:
 	static void TestSingleOnStack()
 	{
-		BiPointer<Dog> dog = new Dog(1);
+		auto dog = BiNew<Dog>(new Dog(1));
 		dog->Bark();
-		//dog = nullptr;
-		cout << "end of test" << endl;
+		auto dogshadow = dog;
+		dogshadow->Bark();
+		dog = nullptr;
+		cout << "end single on stack test" << endl;
+	}
+
+	static void TestSimpleLoop()
+	{
+		auto dog = BiNew<Dog>(new Dog(1));
+		auto human = BiNew<Human>(new Human(1));
+		dog->Bite1 = human;
+		human->Pet1 = dog;
+		cout << "end of simple loop test" << endl;
 	}
 };
 
 
 void TestBiPointer()
 {
-	BiPointerTestser::TestSingleOnStack();
+	//BiPointerTestser::TestSingleOnStack();
+	BiPointerTestser::TestSimpleLoop();
 }

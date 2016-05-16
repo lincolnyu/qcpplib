@@ -37,6 +37,15 @@
     <Filter Include="Header Files\qtl\scheme\pointers">
       <UniqueIdentifier>{56aa2ef7-a869-40df-a1da-78bbe7b63ced}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\qtl">
+      <UniqueIdentifier>{5af9b370-48c7-451f-a999-93a3941dd92c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\qtl\scheme">
+      <UniqueIdentifier>{d253c114-81ac-4e75-8e75-77df29201065}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\qtl\scheme\pointers">
+      <UniqueIdentifier>{c9e7bb1c-9777-4a39-97e5-1d53db4c749b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -91,6 +100,9 @@
     </ClCompile>
     <ClCompile Include="..\..\common\bipointertester.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\qtl\scheme\pointers\bipointer.cpp">
+      <Filter>Source Files\qtl\scheme\pointers</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
