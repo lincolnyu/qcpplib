@@ -84,7 +84,7 @@ class BiPointerTestser
 public:
 	static void TestSingleOnStack()
 	{
-		auto dog = BiNew<Dog>(new Dog(1));
+		auto dog = BiNew<Dog>(1);
 		dog->Bark();
 		auto dogshadow = dog;
 		dogshadow->Bark();
@@ -94,13 +94,15 @@ public:
 
 	static void TestSimpleLoop()
 	{
-		auto dog = BiNew<Dog>(new Dog(1));
-		auto human = BiNew<Human>(new Human(1));
+		auto dog = BiNew<Dog>(1);
+		auto human = BiNew<Human>(1);
 		dog->Bite1 = human;
 		human->Pet1 = dog;
 		cout << "end of simple loop test" << endl;
 	}
 };
+
+
 
 
 void TestBiPointer()

@@ -280,8 +280,13 @@ namespace Qtl
 			template <class T> 
 			BiPointer<T> BiNew(T *t)
 			{
-				BiPointer<T> p = t;
-				return p;
+				return t;
+			}
+
+			template <class T, class... TArgs>
+			BiPointer<T> BiNew(TArgs&&... args)
+			{
+				return new T(std::forward<TArgs>(args)...);
 			}
 		}
 	}
